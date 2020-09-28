@@ -27,6 +27,16 @@ class Image:
         del self.image
         self.image = None
         
+    def generate(self, images, stars, ranks, type_, damage):
+        self.reset()
+        assert len(images) % 5 == 0
+        teams = len(images) // 5
+        n = 0
+        for i in range(teams):
+            self.add_new_team(images[n:n+5], stars[n:n+5], ranks[n:n+5], type_[i], damage[i])
+            n += 5
+    
+        
     def add_new_team(self, images, stars, ranks, type_, damage):
         image = np.ones((128, 820, 3), dtype=np.uint8) * 255
         attribute_zone_line = np.ones((120, 820, 3), dtype=np.uint8) * 255
@@ -76,21 +86,21 @@ class Image:
         cv2.putText(image, "  Auto", (x, 90), cv2.FONT_HERSHEY_DUPLEX,
                     1.5, (0, 0, 0), 1, cv2.LINE_AA)
         if "~" in damage:
-            temp = damage[:-1].split("~")
+            temp = damage.split("~")
             
             cv2.putText(attribute_zone_line, temp[0] + "~", (x, 40), cv2.FONT_HERSHEY_DUPLEX,
                         1.5, (0, 0, 0), 1, cv2.LINE_AA)  
             cv2.putText(attribute_zone_line, temp[1], (x, 80), cv2.FONT_HERSHEY_DUPLEX,
                         1.5, (0, 0, 0), 1, cv2.LINE_AA)
         elif "-" in damage:
-            temp = damage[:-1].split("-")
+            temp = damage.split("-")
             
             cv2.putText(attribute_zone_line, temp[0] + "-", (x, 40), cv2.FONT_HERSHEY_DUPLEX,
                         1.5, (0, 0, 0), 1, cv2.LINE_AA)  
             cv2.putText(attribute_zone_line, temp[1], (x, 80), cv2.FONT_HERSHEY_DUPLEX,
                         1.5, (0, 0, 0), 1, cv2.LINE_AA)
         else:
-            cv2.putText(attribute_zone_line, damage[:-1], (x, 80), cv2.FONT_HERSHEY_DUPLEX,
+            cv2.putText(attribute_zone_line, damage, (x, 80), cv2.FONT_HERSHEY_DUPLEX,
                         2, (0, 0, 0), 1, cv2.LINE_AA)
          
         if self.image is None:

@@ -16,14 +16,33 @@ def cv_imread(filePath):
 class PCTeam:
 
     def __init__(self):
+    
+        self.first_id = 0
+        self.damages = []
+        self.automaticity = []
+        
+        self.team_existence = []
+        self.image_on_click_list = []
         
         self.added = False
-        self.saved = False
         self.root = tk.Tk()
+        
+        self.all_images = []
+        self.all_damages_label = []
+        self.all_automaticity_label = []
+        self.star_var = []
+        self.rank_var = []
+        
+        self.current_images = []
+        self.current_images_index = []
+        self.current_star = []
+        self.current_rank = []
+        self.all_label_imgs = []         
+        
         self.root.title("PCTeam")
         container = tk.Frame(self.root)        
  
-        canvas= tk.Canvas(container, width=700)
+        canvas= tk.Canvas(container, width=850)
         self.canvas = canvas
         vbar = tk.Scrollbar(canvas, orient=tk.VERTICAL, command=canvas.yview) 
         self.team_frame = tk.Frame(canvas)
@@ -51,18 +70,44 @@ class PCTeam:
         buttom_frame.grid(row=1, column=0)
         new_team_button = tk.Button(buttom_frame, text="Add New Team", command=self.add_new_team).pack(side=tk.LEFT)
         save_button = tk.Button(buttom_frame, text="Save", command=self._save).pack(side=tk.LEFT, padx=(30, 0))
+        delete_button = tk.Button(buttom_frame, text="Delete Selected Team", command=self.remove_team).pack(side=tk.LEFT, padx=(30, 0))
         
         self.radio_value = tk.IntVar()
         self.radio_value.set(1)
-        tk.Radiobutton(buttom_frame, text="全自動", variable=self.radio_value, value=1).pack(side=tk.LEFT, padx=(30, 0))
-        tk.Radiobutton(buttom_frame, text="半自動", variable=self.radio_value, value=2).pack(side=tk.LEFT)
-        tk.Radiobutton(buttom_frame, text="手動", variable=self.radio_value, value=3).pack(side=tk.LEFT)
+        
+        def generate_radio_command(value):
+            if value == 1:
+                def on_select():
+                    team_index = self.selected_image//5
+                    self.automaticity[team_index] = value
+                    self.all_automaticity_label[team_index].set("Full-Auto")
+            elif value == 2:
+                def on_select():
+                    team_index = self.selected_image//5
+                    self.automaticity[team_index] = value
+                    self.all_automaticity_label[team_index].set("Semi-Auto")
+            else:
+                def on_select():
+                    team_index = self.selected_image//5
+                    self.automaticity[team_index] = value
+                    self.all_automaticity_label[team_index].set("Non-Auto")
+            return on_select
+     
+        tk.Radiobutton(buttom_frame, text="全自動", variable=self.radio_value, value=1, command=generate_radio_command(1)).pack(side=tk.LEFT, padx=(30, 0))
+        tk.Radiobutton(buttom_frame, text="半自動", variable=self.radio_value, value=2, command=generate_radio_command(2)).pack(side=tk.LEFT)
+        tk.Radiobutton(buttom_frame, text="手動", variable=self.radio_value, value=3, command=generate_radio_command(3)).pack(side=tk.LEFT)
         var = tk.StringVar()
         var.set("傷害：")
         tk.Label(buttom_frame, textvariable=var).pack(side=tk.LEFT, padx=(30, 0))
-        self.damage = tk.Text(buttom_frame, height=1, width=20)
-        self.damage.pack(side=tk.LEFT)  
+        self.damage = tk.StringVar()
         
+        def on_trace(name, index, mode, sv=self.damage):
+            team_index = self.selected_image//5
+            self.damages[team_index] = sv.get()
+            self.all_damages_label[team_index].set(sv.get())
+            
+        self.damage.trace("w", on_trace)
+        tk.Entry(buttom_frame, textvariable=self.damage).pack(side=tk.LEFT)  
         
         data = allIcons()
         self.all_listboxes = []
@@ -123,40 +168,95 @@ class PCTeam:
        
         self.add_new_team()
         
+    def remove_team(self):
+        if sum(self.team_existence) == 1:
+            return
+        team = self.selected_image//5
+        start = 5 * team
+        end = 5 * team + 5
+        self.damages[team] = -1
+        self.automaticity[team] = -1
+        self.all_automaticity_label[team] = -1
+        self.all_damages_label[team] = -1
+        self.current_images[start:end] = [-1, -1, -1, -1, -1]
+        self.current_images_index[start:end] = [-1, -1, -1, -1, -1]
+        self.current_star[start:end] = [-1, -1, -1, -1, -1]
+        self.current_rank[start:end] = [-1, -1, -1, -1, -1]
+        self.rank_var[start:end] = [-1, -1, -1, -1, -1]
+        self.star_var[start:end] = [-1, -1, -1, -1, -1]
+        self.image_on_click_list[start:end] = [-1, -1, -1, -1, -1]
+        self.team_existence[team] = False
+        
+        def find_last_true(in_):
+            for i, x in enumerate(reversed(in_)):
+                if x:
+                    break
+            return len(in_) - i - 1
+            
+        last_true = find_last_true(self.team_existence)
+        self.image_on_click_list[5*last_true]()
+        
+        #self.current_images_index.append(-1)
+        #self.current_star.append([])
+        #self.current_rank.append([])
+        #self.rank_var.append([])
+        #self.star_var.append(var)
+        
+        temp = self.all_teams[team]
+        self.all_teams[team] = -1
+        temp.destroy()
+        
+        
     def add_new_team(self):
         self.saved = False
         if self.added:
             for n, i in zip(self.current_images, self.all_images):
+                if n == -1:
+                    continue
                 i.image = self.all_unselected_icons[n]
                 i.configure(image=self.all_unselected_icons[n])
-            for l in self.all_label_imgs:
-                l.unbind("<Button 1>")
-            self.image.add_new_team(self.current_images, self.current_star, self.current_rank, self.radio_value.get(), self.damage.get(1.0, tk.END))
         else:
             self.added = True
-        self.selected_image = 0
-        self.all_images = []
+        self.selected_image = self.first_id
+        
+        self.damages.append("")
+        self.automaticity.append(1)
+        self.team_existence.append(True)
+        holder = tk.Frame(self.team_frame)
+        holder.pack(side=tk.BOTTOM, pady=(5, 0))
+        character_frame = tk.Frame(holder, width=800)
+        self.all_teams.append(holder)
+        character_frame.pack(side=tk.LEFT)
+        
+        ad_frame = tk.Frame(holder)
+        ad_frame.pack(side=tk.LEFT, padx=(0, 0), anchor=tk.NW)
+        
+        var = tk.StringVar()
+        var.set("Full-Auto")
+        self.all_automaticity_label.append(var)
+        tk.Label(ad_frame, textvariable=var, font=("Arial", 20), width=10, height=1).grid(row=0, column=0)
 
-        self.current_images = ["empty", "empty", "empty", "empty", "empty"]
-        self.current_images_index = [-1, -1, -1, -1, -1]
-        self.current_star = [[], [], [], [], []]
-        self.current_rank = [[], [], [], [], []]
-        self.all_label_imgs = []
+        tk.Label(ad_frame, text="Damage:", font=("Arial", 20), width=10, height=1).grid(row=1, column=0) 
         
-        self.star_var = []
-        self.rank_var = [[], [], [], [], []]
+        var = tk.StringVar()
+        var.set("")
+        self.all_damages_label.append(var)
+        tk.Label(ad_frame, textvariable=var, font=("Arial", 20), width=10, height=1).grid(row=2, column=0)  
         
-        character_frame = tk.Frame(self.team_frame)
-        self.all_teams.append(character_frame)
-        character_frame.pack(side=tk.BOTTOM, pady=(5, 0))
-        for i in range(5):
+        for i in range(self.first_id, self.first_id+5):
+            self.current_images.append("empty")
+            self.current_images_index.append(-1)
+            self.current_star.append([])
+            self.current_rank.append([])
+            self.rank_var.append([])
             if i == 0:
                 label_img = tk.Label(character_frame, image=self.all_selected_icons["empty"])
             else:
                 label_img = tk.Label(character_frame, image=self.all_unselected_icons["empty"])
             self.all_label_imgs.append(label_img)
-            label_img.grid(row=0, column=i)
+            label_img.grid(row=0, column=i-self.first_id)
             on_click = self._image_on_click_event_generator(i)
+            self.image_on_click_list.append(on_click)
             label_img.bind("<Button-1>", on_click)
             self.all_images.append(label_img)
             
@@ -164,27 +264,28 @@ class PCTeam:
             var.set("星數：")
             self.star_var.append(var)
             label = tk.Label(character_frame, textvariable=var, wraplength=128)
-            label.grid(row=1, column=i, sticky=tk.W)
+            label.grid(row=1, column=i-self.first_id, sticky=tk.W)
             
             var = tk.StringVar()
             var.set("Rank：")
             self.rank_var[i].append(var)
             label = tk.Label(character_frame, textvariable=var, wraplength=125)
-            label.grid(row=2, column=i, sticky=tk.W)
+            label.grid(row=2, column=i-self.first_id, sticky=tk.W)
             
             var = tk.StringVar()
             var.set(" ")
             self.rank_var[i].append(var)
             label = tk.Label(character_frame, textvariable=var, wraplength=125)
-            label.grid(row=3, column=i, sticky=tk.W)
+            label.grid(row=3, column=i-self.first_id, sticky=tk.W)
             
             var = tk.StringVar()
             var.set(" ")
             self.rank_var[i].append(var)
             label = tk.Label(character_frame, textvariable=var, wraplength=125)
-            label.grid(row=4, column=i, sticky=tk.W)
-            if i == 0:
+            label.grid(row=4, column=i-self.first_id, sticky=tk.W)
+            if i == self.first_id:
                 temp_o = on_click
+        self.first_id += 5
         temp_o()
         
     def run(self):
@@ -195,17 +296,17 @@ class PCTeam:
         if not f.endswith("jpg") and not f.endswith("jpeg"):
             return
 
-        if not self.saved:
-            self.image.add_new_team(self.current_images, self.current_star, self.current_rank, self.radio_value.get(), self.damage.get(1.0, tk.END))
+        self.image.generate(self.current_images, self.current_star, self.current_rank, self.automaticity, self.damages)
         self.image.save(f)
-        self.saved = True
         
     def _image_on_click_event_generator(self, num):
         def on_click(event=None):
             self.selected_image = num
             self.all_images[num].image = self.all_selected_icons["empty"]
             self.all_images[num].configure(image=self.all_selected_icons["empty"])
-            for i in range(5):
+            for i in range(len(self.current_images)):
+                if self.current_images[i] == -1:
+                    continue
                 if i == num:
                     self.all_images[i].image = self.all_selected_icons[self.current_images[i]]
                     self.all_images[i].configure(image=self.all_selected_icons[self.current_images[i]])
@@ -219,6 +320,8 @@ class PCTeam:
                 self.all_listboxes[1].select_set(i)
             for i in self.current_rank[num]:
                 self.all_listboxes[2].select_set(i)
+            self.radio_value.set(self.automaticity[num//5])
+            self.damage.set(self.damages[num//5])
         return on_click
         
     def _generate_listbox_with_scrollbar(self, root, item_list, selectmode=tk.SINGLE, anchor=None, on_select=None):
