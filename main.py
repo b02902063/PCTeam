@@ -296,7 +296,7 @@ class PCTeam:
         if not f.endswith("jpg") and not f.endswith("jpeg"):
             return
 
-        self.image.generate(self.current_images, self.current_star, self.current_rank, self.automaticity, self.damages)
+        self.image.generate(self.current_images, self.current_star, self.current_rank, self.automaticity, self.damages, self.team_existence)
         self.image.save(f)
         
     def _image_on_click_event_generator(self, num):

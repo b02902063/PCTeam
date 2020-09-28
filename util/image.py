@@ -27,13 +27,14 @@ class Image:
         del self.image
         self.image = None
         
-    def generate(self, images, stars, ranks, type_, damage):
+    def generate(self, images, stars, ranks, type_, damage, existance):
         self.reset()
         assert len(images) % 5 == 0
         teams = len(images) // 5
         n = 0
         for i in range(teams):
-            self.add_new_team(images[n:n+5], stars[n:n+5], ranks[n:n+5], type_[i], damage[i])
+            if existance[i]:
+                self.add_new_team(images[n:n+5], stars[n:n+5], ranks[n:n+5], type_[i], damage[i])
             n += 5
     
         
@@ -52,6 +53,9 @@ class Image:
                 string += str(s+1) + ","
             cv2.putText(attribute_zone_line, "Star:" + string[:-1], (x, 20), cv2.FONT_HERSHEY_DUPLEX,
                     0.5, (0, 0, 0), 1, cv2.LINE_AA)
+            if len(star) > 0:
+                cv2.putText(image, str(star[-1]) + "*", (x, 120), cv2.FONT_HERSHEY_DUPLEX,
+                    2, (0, 0, 255), 2, cv2.LINE_AA) 
             x += 133
             
         x = 0
@@ -73,7 +77,11 @@ class Image:
                     0.5, (0, 0, 0), 1, cv2.LINE_AA)
             cv2.putText(attribute_zone_line, string3[:-1], (x, 100), cv2.FONT_HERSHEY_DUPLEX,
                     0.5, (0, 0, 0), 1, cv2.LINE_AA)
+            if len(rank) > 0:        
+                cv2.putText(image, "R" + str(rank[-1]), (x, 56), cv2.FONT_HERSHEY_DUPLEX,
+                    2, (0, 0, 255), 2, cv2.LINE_AA)        
             x += 133
+            
         
         if type_ == 1:
             t = "Full-"
