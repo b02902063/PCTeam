@@ -40,7 +40,13 @@ class Image:
         
     def add_new_team(self, images, stars, ranks, type_, damage):
         image = np.ones((128, 820, 3), dtype=np.uint8) * 255
+        image[..., 0] = 204
+        image[..., 1] = 229
+        image[..., 2] = 255
         attribute_zone_line = np.ones((120, 820, 3), dtype=np.uint8) * 255
+        attribute_zone_line[..., 0] = 204
+        attribute_zone_line[..., 1] = 229
+        attribute_zone_line[..., 2] = 255
         x = 0
         for i in images:
             image[:,x:x+128, :] = self.all_images_array[i]
@@ -54,7 +60,9 @@ class Image:
             cv2.putText(attribute_zone_line, "Star:" + string[:-1], (x, 20), cv2.FONT_HERSHEY_DUPLEX,
                     0.5, (0, 0, 0), 1, cv2.LINE_AA)
             if len(star) > 0:
-                cv2.putText(image, str(star[-1]) + "*", (x, 120), cv2.FONT_HERSHEY_DUPLEX,
+                cv2.putText(image, str(star[-1]+1) + "*", (x, 120), cv2.FONT_HERSHEY_DUPLEX,
+                    2, (0, 255, 255), 5, cv2.LINE_AA) 
+                cv2.putText(image, str(star[-1]+1) + "*", (x, 120), cv2.FONT_HERSHEY_DUPLEX,
                     2, (0, 0, 255), 2, cv2.LINE_AA) 
             x += 133
             
@@ -78,38 +86,55 @@ class Image:
             cv2.putText(attribute_zone_line, string3[:-1], (x, 100), cv2.FONT_HERSHEY_DUPLEX,
                     0.5, (0, 0, 0), 1, cv2.LINE_AA)
             if len(rank) > 0:        
-                cv2.putText(image, "R" + str(rank[-1]), (x, 56), cv2.FONT_HERSHEY_DUPLEX,
+                cv2.putText(image, "R" + str(rank[-1]+1), (x, 56), cv2.FONT_HERSHEY_DUPLEX,
+                    2, (0, 255, 255), 5, cv2.LINE_AA)      
+                cv2.putText(image, "R" + str(rank[-1]+1), (x, 56), cv2.FONT_HERSHEY_DUPLEX,
                     2, (0, 0, 255), 2, cv2.LINE_AA)        
             x += 133
             
         
         if type_ == 1:
             t = "Full-"
+            color = (0, 255, 0)
         elif type_ == 2:
             t = "Semi-"
+            color = (0, 255, 255)
         else:
             t = "Non-"
+            color = (0, 0, 255)
         cv2.putText(image, t, (x, 40), cv2.FONT_HERSHEY_DUPLEX,
-                    1.5, (0, 0, 0), 1, cv2.LINE_AA)
+                    1.5, (0, 0, 0), 5, cv2.LINE_AA)
         cv2.putText(image, "  Auto", (x, 90), cv2.FONT_HERSHEY_DUPLEX,
-                    1.5, (0, 0, 0), 1, cv2.LINE_AA)
+                    1.5, (0, 0, 0), 5, cv2.LINE_AA)
+        cv2.putText(image, t, (x, 40), cv2.FONT_HERSHEY_DUPLEX,
+                    1.5, color, 2, cv2.LINE_AA)
+        cv2.putText(image, "  Auto", (x, 90), cv2.FONT_HERSHEY_DUPLEX,
+                    1.5, color, 2, cv2.LINE_AA)
         if "~" in damage:
             temp = damage.split("~")
-            
             cv2.putText(attribute_zone_line, temp[0] + "~", (x, 40), cv2.FONT_HERSHEY_DUPLEX,
-                        1.5, (0, 0, 0), 1, cv2.LINE_AA)  
+                        1.5, (0, 0, 0), 5, cv2.LINE_AA)  
             cv2.putText(attribute_zone_line, temp[1], (x, 80), cv2.FONT_HERSHEY_DUPLEX,
-                        1.5, (0, 0, 0), 1, cv2.LINE_AA)
+                        1.5, (0, 0, 0), 5, cv2.LINE_AA)
+            cv2.putText(attribute_zone_line, temp[0] + "~", (x, 40), cv2.FONT_HERSHEY_DUPLEX,
+                        1.5, (0, 128, 255), 2, cv2.LINE_AA)  
+            cv2.putText(attribute_zone_line, temp[1], (x, 80), cv2.FONT_HERSHEY_DUPLEX,
+                        1.5, (0, 128, 255), 2, cv2.LINE_AA)
         elif "-" in damage:
             temp = damage.split("-")
-            
             cv2.putText(attribute_zone_line, temp[0] + "-", (x, 40), cv2.FONT_HERSHEY_DUPLEX,
-                        1.5, (0, 0, 0), 1, cv2.LINE_AA)  
+                        1.5, (0, 0, 0), 5, cv2.LINE_AA)  
             cv2.putText(attribute_zone_line, temp[1], (x, 80), cv2.FONT_HERSHEY_DUPLEX,
-                        1.5, (0, 0, 0), 1, cv2.LINE_AA)
+                        1.5, (0, 0, 0), 5, cv2.LINE_AA)
+            cv2.putText(attribute_zone_line, temp[0] + "-", (x, 40), cv2.FONT_HERSHEY_DUPLEX,
+                        1.5, (0, 128, 255), 2, cv2.LINE_AA)  
+            cv2.putText(attribute_zone_line, temp[1], (x, 80), cv2.FONT_HERSHEY_DUPLEX,
+                        1.5, (0, 128, 255), 2, cv2.LINE_AA)
         else:
             cv2.putText(attribute_zone_line, damage, (x, 80), cv2.FONT_HERSHEY_DUPLEX,
-                        2, (0, 0, 0), 1, cv2.LINE_AA)
+                        2, (0, 0, 0), 5, cv2.LINE_AA)
+            cv2.putText(attribute_zone_line, damage, (x, 80), cv2.FONT_HERSHEY_DUPLEX,
+                        2, (0, 128, 255), 2, cv2.LINE_AA)
          
         if self.image is None:
             self.image = self.image = np.concatenate([image, attribute_zone_line], axis=0)

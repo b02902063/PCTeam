@@ -196,12 +196,6 @@ class PCTeam:
         last_true = find_last_true(self.team_existence)
         self.image_on_click_list[5*last_true]()
         
-        #self.current_images_index.append(-1)
-        #self.current_star.append([])
-        #self.current_rank.append([])
-        #self.rank_var.append([])
-        #self.star_var.append(var)
-        
         temp = self.all_teams[team]
         self.all_teams[team] = -1
         temp.destroy()
